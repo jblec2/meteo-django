@@ -77,8 +77,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ul_val_prj_mh_hydro_pr',
-        'USER': 'jblec2',
-        'PASSWORD': 'F3zhZcaV75',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'postgres-9.svc.valeria.science',  # or the DB server's address
         'PORT': '5432',
         'OPTIONS':{"assume_role":"ul_val_prj_mh_hydro_pr_p"},
