@@ -11,22 +11,22 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-7=%unbii!5zy+=wvk+qy3i=&#4xz@t!gg^%9^e9qt($@mk-9tu"
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.68.5.44', '100.116.31.106', 'localhost', '127.0.0.1' ]
 
+STATIC_ROOT = '/var/www/meteo-django/static/'
+MEDIA_ROOT = '/var/www/meteo-django/media/'
 
 # Application definition
 
@@ -76,12 +76,11 @@ WSGI_APPLICATION = "meteo_ui.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ul_val_prj_mh_hydro_pr',
-        'USER': 'jblec2',
-        'PASSWORD': 'F3zhZcaV75',
-        'HOST': 'postgres-9.svc.valeria.science',  # or the DB server's address
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': 'db',  # or the DB server's address
         'PORT': '5432',
-        'OPTIONS':{"assume_role":"ul_val_prj_mh_hydro_pr_p"},
         'CONN_MAX_AGE': 60,  # optional, enables persistent connections
     }
 }
