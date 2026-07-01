@@ -1,46 +1,102 @@
- {% load static %}
+{% extends "dashboard/base.html" %}
 
-<!DOCTYPE html>
+{% block title %}{{ object.name|default:"Station" }} — EnvCa Weather Inventory{% endblock %}
 
-<html lang="en">
+{% block content %}
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    </head>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:total_amount_of_station' %}">Station map</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ object.name|default:"Station" }}</li>
+        </ol>
+    </nav>
 
-    <body>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+        <h2 class="mb-0">{{ object.name|default:"Unnamed station" }}</h2>
+        {% if object.province %}<span class="badge bg-secondary">{{ object.province }}</span>{% endif %}
+        {% if object.climate_id %}<span class="badge bg-light text-dark border">Climate ID {{ object.climate_id }}</span>{% endif %}
+        {% if object.station_id %}<span class="badge bg-light text-dark border">Station ID {{ object.station_id }}</span>{% endif %}
+    </div>
 
-        <div class="container-fluid border py-3 my-3">
-            <h3>{{ object.name }}</h3>
-            {% if error %}
-                <div class="alert alert-danger" role="alert">{{ error }}</div>
-            {% endif %}
-            <form method="get">
-                <div class="row g-2 align-items-end mb-3">
-                    <div class="col-sm-4">
-                        <label for="date_beginning" class="form-label">Date beginning</label>
-                        <input type="date" id="date_beginning" name="date_beginning" class="form-control" required>
-                    </div>
-                    <div class="col-sm-3">
-                        <label for="date_end" class="form-label">Date end</label>
-                        <input type="date" id="date_end" name="date_end" class="form-control" required>
-                    </div>
-                    <div class="col-sm-3">
-                        <label for="freq" class="form-label">Frequency</label>
-                        <select id="freq" name="freq" class="form-select">
-                            <option value="hourly" {% if not available_freqs.hourly %}disabled{% endif %} {% if default_freq == "hourly" %}selected{% endif %}>Hourly</option>
-                            <option value="daily" {% if not available_freqs.daily %}disabled{% endif %} {% if default_freq == "daily" %}selected{% endif %}>Daily</option>
-                            <option value="monthly" {% if not available_freqs.monthly %}disabled{% endif %} {% if default_freq == "monthly" %}selected{% endif %}>Monthly</option>
-                        </select>
-                    </div>
+    {% if error %}
+        <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-uppercase text-muted small mb-3">Station details</h6>
+                    <dl class="station-meta mb-0">
+                        <dt>Coordinates</dt>
+                        <dd>
+                            {% if object.latitude_decimal_degrees_field and object.longitude_decimal_degrees_field %}
+                                {{ object.latitude_decimal_degrees_field|floatformat:4 }}, {{ object.longitude_decimal_degrees_field|floatformat:4 }}
+                            {% else %}
+                                <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </dd>
+                        <dt>Elevation</dt>
+                        <dd>
+                            {% if object.elevation_m_field %}{{ object.elevation_m_field }} m{% else %}<span class="text-muted">Unknown</span>{% endif %}
+                        </dd>
+                        <dt>Period of record</dt>
+                        <dd>
+                            {% if object.first_year and object.last_year %}
+                                {{ object.first_year }} &ndash; {{ object.last_year }}
+                            {% else %}
+                                <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </dd>
+                        <dt>Data availability</dt>
+                        <dd class="d-flex flex-wrap gap-2">
+                            <span class="badge {% if available_freqs.hourly %}bg-success{% else %}bg-light text-muted border{% endif %}">
+                                Hourly{% if available_freqs.hourly %} ({{ object.hly_first_year }}&ndash;{{ object.hly_last_year }}){% endif %}
+                            </span>
+                            <span class="badge {% if available_freqs.daily %}bg-success{% else %}bg-light text-muted border{% endif %}">
+                                Daily{% if available_freqs.daily %} ({{ object.dly_first_year }}&ndash;{{ object.dly_last_year }}){% endif %}
+                            </span>
+                            <span class="badge {% if available_freqs.monthly %}bg-success{% else %}bg-light text-muted border{% endif %}">
+                                Monthly{% if available_freqs.monthly %} ({{ object.mly_first_year }}&ndash;{{ object.mly_last_year }}){% endif %}
+                            </span>
+                        </dd>
+                    </dl>
                 </div>
-                <div class="col-sm-1">
-                    <button type="submit" id="Submit" class="btn btn-outline-secondary btn-sm">Download</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </body>
 
-</html>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-uppercase text-muted small mb-3">Download data</h6>
+                    <form method="get">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-sm-4">
+                                <label for="date_beginning" class="form-label">Date beginning</label>
+                                <input type="date" id="date_beginning" name="date_beginning" class="form-control" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="date_end" class="form-label">Date end</label>
+                                <input type="date" id="date_end" name="date_end" class="form-control" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="freq" class="form-label">Frequency</label>
+                                <select id="freq" name="freq" class="form-select">
+                                    <option value="hourly" {% if not available_freqs.hourly %}disabled{% endif %} {% if default_freq == "hourly" %}selected{% endif %}>Hourly</option>
+                                    <option value="daily" {% if not available_freqs.daily %}disabled{% endif %} {% if default_freq == "daily" %}selected{% endif %}>Daily</option>
+                                    <option value="monthly" {% if not available_freqs.monthly %}disabled{% endif %} {% if default_freq == "monthly" %}selected{% endif %}>Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" id="Submit" class="btn btn-primary">
+                                <i class="bi bi-download me-1"></i>Download
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
